@@ -791,7 +791,12 @@ function init3DAnatomy(containerId, riskScore) {
         const particleCount = 120;
         const particleGeo = new THREE.BufferGeometry();
         const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3); // For blue and purple tinting
         const initialData = []; // Store speed, radius, angle, axis info for custom orbits
+
+        // Color definitions for blue (0x00bbf9) and purple (0x7209b7)
+        const colorBlue = new THREE.Color(0x00bbf9);
+        const colorPurple = new THREE.Color(0x7209b7);
 
         for (let i = 0; i < particleCount; i++) {
             // Orbit parameters
@@ -810,19 +815,27 @@ function init3DAnatomy(containerId, riskScore) {
             positions[i * 3] = x;
             positions[i * 3 + 1] = y;
             positions[i * 3 + 2] = z;
+
+            // Randomly assign blue or purple
+            const pColor = Math.random() > 0.5 ? colorBlue : colorPurple;
+            colors[i * 3] = pColor.r;
+            colors[i * 3 + 1] = pColor.g;
+            colors[i * 3 + 2] = pColor.b;
         }
 
         particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-        // Custom glowing point material
-        const pTexture = createCircleTexture(themeColor);
+        // Custom glowing point material (using white texture so vertex colors can tint it)
+        const pTexture = createCircleTexture();
         const particleMat = new THREE.PointsMaterial({
             size: 0.15,
             map: pTexture,
+            vertexColors: true, // Enable vertex colors!
             transparent: true,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
-            opacity: 0.75
+            opacity: 0.8
         });
 
         const particleSystem = new THREE.Points(particleGeo, particleMat);
@@ -845,20 +858,16 @@ function init3DAnatomy(containerId, riskScore) {
         pointLight.position.set(0, 0, 0);
         scene.add(pointLight);
 
-        // Helper: Canvas Texture for Circle Particles
-        function createCircleTexture(colorValue) {
+        // Helper: Canvas Texture for Circle Particles (White gradient, tinted by vertex colors)
+        function createCircleTexture() {
             const pCanvas = document.createElement('canvas');
             pCanvas.width = 16;
             pCanvas.height = 16;
             const ctx = pCanvas.getContext('2d');
             const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
             
-            const r = (colorValue >> 16) & 255;
-            const g = (colorValue >> 8) & 255;
-            const b = colorValue & 255;
-            
-            grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 1)`);
-            grad.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, 0.5)`);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)');
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, 16, 16);
@@ -1037,7 +1046,11 @@ function runCanvas2DFallback(container, speedMultiplier, themeColor, particleBeh
         const yOffset = (Math.random() - 0.5) * 60;
         const speed = (0.015 + Math.random() * 0.02) * speedMultiplier;
         
-        particles.push({ radius, angle, yOffset, speed });
+        // Randomly assign glowing blue (0, 187, 249) or glowing purple (114, 9, 183)
+        const isBlue = Math.random() > 0.5;
+        const color = isBlue ? "rgb(0, 187, 249)" : "rgb(114, 9, 183)";
+        
+        particles.push({ radius, angle, yOffset, speed, color });
     }
     
     // Orbit rings: define points on 3 circular rings in 3D space
@@ -1199,7 +1212,7 @@ function runCanvas2DFallback(container, speedMultiplier, themeColor, particleBeh
             let x2 = x1;
             
             const scale = 200 / (200 + z2);
-            return { x: cx + x2 * scale, y: cy + y2 * scale, z: z2 };
+            return { x: cx + x2 * scale, y: cy + y2 * scale, z: z2, color: p.color };
         });
         
         // Depth split (render back particles first, then central structures, then front particles)
@@ -1208,7 +1221,7 @@ function runCanvas2DFallback(container, speedMultiplier, themeColor, particleBeh
         
         // Render back particles
         backParticles.forEach(p => {
-            drawParticle(ctx, p, colorStr);
+            drawParticle(ctx, p, p.color);
         });
         
         // Render rings
@@ -1247,7 +1260,7 @@ function runCanvas2DFallback(container, speedMultiplier, themeColor, particleBeh
         
         // Render front particles
         frontParticles.forEach(p => {
-            drawParticle(ctx, p, colorStr);
+            drawParticle(ctx, p, p.color);
         });
     }
     
