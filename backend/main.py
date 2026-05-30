@@ -144,27 +144,8 @@ async def predict_risk_and_narrate(patient: PatientDataInput):
         3. Factual, actionable steps strictly matching the Context Guidelines.
         """
 
-        if ai_client:
-            # Execute Gemini API call using the structured workflow
-            ai_response = ai_client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=user_prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_instruction,
-                    temperature=0.2 # Lower temperature prevents creative hallucinations
-                )
-            )
-            patient_narrative = ai_response.text
-        else:
-            # Local high fidelity fallback narrative in case of missing API key
-            risk_str = "elevated risk profile" if risk_probability >= 30 else "low risk profile"
-            patient_narrative = f"""### AI Clinical Consult Report
- 
- - **Risk Profile Summary**: Based on your diagnostic inputs, the diagnostics engine calculates a **{round(risk_probability, 2)}% probability** of type 2 diabetes. Your metrics place you within an **{risk_str}**.
- - **Primary Risk Factor ('{primary_driver}')**: SHAP explainability models indicate that **{primary_driver}** is the primary contributor driving your calculated risk percentage above baseline values.
- - **Actionable Steps (Clinical Guidelines)**: {retrieved_guideline}
- 
- *DISCLAIMER: This report is automatically generated for educational purposes based on clinical guidelines. It does not constitute medical advice or a formal prescription. Please seek direct medical consultation from a licensed physician.*"""
+        # AI narrative generation is disabled to optimize portal response latency and Sandbox speed
+        patient_narrative = "AI consult narrative generation disabled to optimize portal latency."
 
         # Return the consolidated enterprise-grade response
         return {

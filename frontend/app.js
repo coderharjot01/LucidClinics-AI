@@ -546,9 +546,6 @@ function initReportPage() {
     // Initial page load layout updates
     updateReportUIData(data, inputs, patientSex);
 
-    // 1. Initialise Speech Synthesis for the AI consult narrative
-    initSpeechScribe();
-
     // 2. Initialise What-If Sandbox sliders
     initSandboxPanel(inputs, patientSex);
 }
@@ -684,17 +681,6 @@ function updateReportUIData(data, inputs, patientSex) {
 
     // 6. Initialise 3D Anatomy Visualizer (WebGL / Canvas Fallback)
     init3DAnatomy("anatomy-3d-container", riskPercentage);
-
-    // 7. Inject AI consult narrative
-    const narrativeContainer = document.getElementById("ai-narrative-text");
-    if (narrativeContainer) {
-        const narrativeText = data.ai_patient_report || data.clinical_narrative;
-        if (narrativeText) {
-            narrativeContainer.innerHTML = parseMarkdownToHtml(narrativeText);
-        } else {
-            narrativeContainer.innerHTML = "<p style='color: var(--color-text-muted);'>No narrative summary available.</p>";
-        }
-    }
 
     // 8. Action Button Listeners (Only bind once on initial page load)
     const btnNewTest = document.getElementById("btn-new-test");
