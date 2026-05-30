@@ -12,6 +12,54 @@ document.addEventListener("DOMContentLoaded", () => {
         navReportLink.style.cursor = "pointer";
     }
 
+    // 1. Create and bind global Spotlight Cursor Glow
+    const cursorGlow = document.createElement("div");
+    cursorGlow.className = "cursor-glow";
+    document.body.appendChild(cursorGlow);
+
+    window.addEventListener("mousemove", (e) => {
+        cursorGlow.style.opacity = "1";
+        requestAnimationFrame(() => {
+            cursorGlow.style.left = `${e.clientX}px`;
+            cursorGlow.style.top = `${e.clientY}px`;
+        });
+    });
+
+    window.addEventListener("mouseout", () => {
+        cursorGlow.style.opacity = "0";
+    });
+
+    // 2. Bind 3D mouse tilt handlers to all glassmorphic cards
+    const cards = document.querySelectorAll(".card, .stat-card");
+    cards.forEach(card => {
+        card.addEventListener("mousemove", (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // snappier tilt transitions on mousemove
+            card.style.transition = 'transform 0.1s ease-out, box-shadow 0.3s ease';
+            
+            const rotateY = ((x - centerX) / centerX) * 5;
+            const rotateX = ((centerY - y) / centerY) * 5;
+            
+            const pctX = (x / rect.width) * 100;
+            const pctY = (y / rect.height) * 100;
+            
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
+            card.style.backgroundImage = `radial-gradient(circle at ${pctX}% ${pctY}%, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 60%), var(--bg-card)`;
+        });
+        
+        card.addEventListener("mouseleave", () => {
+            card.style.transition = 'var(--transition-smooth)';
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+            card.style.backgroundImage = 'none';
+        });
+    });
+
     if (isReportPage) {
         initReportPage();
     } else if (isIntakePage) {
@@ -33,15 +81,48 @@ function initIntakePage() {
     const panes = document.querySelectorAll(".wizard-step-pane");
     const stepLines = document.querySelectorAll(".step-line");
 
-    function showStep(stepNum) {
+    function showStep(stepNum, direction = 'next') {
+        const prevStep = currentStep;
         currentStep = stepNum;
         
-        // Toggle step panes visibility
-        panes.forEach(pane => {
-            pane.classList.remove("active");
-        });
+        const prevPane = document.querySelector(".wizard-step-pane.active") || document.getElementById(`step-pane-${prevStep}`);
         const activePane = document.getElementById(`step-pane-${stepNum}`);
-        if (activePane) activePane.classList.add("active");
+
+        if (prevPane && prevPane !== activePane) {
+            // Apply slide-out animation to the current pane
+            const outClass = direction === 'next' ? 'pane-slide-out-left' : 'pane-slide-out-right';
+            const inClass = direction === 'next' ? 'pane-slide-in-right' : 'pane-slide-in-left';
+            
+            prevPane.classList.add(outClass);
+            
+            // Lock form card dimensions during animation to avoid layout jumping
+            const formCard = document.getElementById("form-card");
+            if (formCard) {
+                formCard.style.minHeight = `${formCard.offsetHeight}px`;
+            }
+
+            setTimeout(() => {
+                prevPane.classList.remove("active", outClass);
+                
+                if (activePane) {
+                    activePane.classList.add("active", inClass);
+                    
+                    // Clean up the inClass after animation completes
+                    setTimeout(() => {
+                        activePane.classList.remove(inClass);
+                        if (formCard) {
+                            formCard.style.minHeight = ""; // Reset locked height
+                        }
+                    }, 250);
+                }
+            }, 220);
+        } else {
+            // Initial load, no animations
+            panes.forEach(pane => {
+                pane.classList.remove("active");
+            });
+            if (activePane) activePane.classList.add("active");
+        }
 
         // Update Stepper header states
         steps.forEach(step => {
@@ -73,7 +154,7 @@ function initIntakePage() {
     nextButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             if (currentStep < 4) {
-                showStep(currentStep + 1);
+                showStep(currentStep + 1, 'next');
             }
         });
     });
@@ -82,7 +163,7 @@ function initIntakePage() {
     prevButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             if (currentStep > 1) {
-                showStep(currentStep - 1);
+                showStep(currentStep - 1, 'prev');
             }
         });
     });
@@ -99,6 +180,96 @@ function initIntakePage() {
         { id: "age", isFloat: false }
     ];
 
+    // Helper to update slider track gradient and value display glow based on thresholds
+    function updateSliderGlow(sliderId, value, min, max, displayEl, inputEl) {
+        const pct = ((value - min) / (max - min)) * 100;
+        let color = "var(--color-teal)"; // Green/teal default
+        let glowColor = "rgba(0, 245, 212, 0.35)";
+        
+        if (sliderId === "glucose") {
+            if (value > 125) {
+                color = "var(--color-danger)";
+                glowColor = "rgba(239, 68, 68, 0.35)";
+            } else if (value > 99) {
+                color = "var(--color-warning)";
+                glowColor = "rgba(245, 158, 11, 0.35)";
+            }
+        } else if (sliderId === "bmi") {
+            if (value >= 30) {
+                color = "var(--color-danger)";
+                glowColor = "rgba(239, 68, 68, 0.35)";
+            } else if (value >= 25) {
+                color = "var(--color-warning)";
+                glowColor = "rgba(245, 158, 11, 0.35)";
+            }
+        } else if (sliderId === "blood_pressure") {
+            if (value >= 90) {
+                color = "var(--color-danger)";
+                glowColor = "rgba(239, 68, 68, 0.35)";
+            } else if (value >= 80) {
+                color = "var(--color-warning)";
+                glowColor = "rgba(245, 158, 11, 0.35)";
+            }
+        } else if (sliderId === "insulin") {
+            if (value > 250) {
+                color = "var(--color-danger)";
+                glowColor = "rgba(239, 68, 68, 0.35)";
+            } else if (value > 140) {
+                color = "var(--color-warning)";
+                glowColor = "rgba(245, 158, 11, 0.35)";
+            }
+        } else if (sliderId === "age") {
+            if (value >= 50) {
+                color = "var(--color-danger)";
+                glowColor = "rgba(239, 68, 68, 0.35)";
+            } else if (value >= 35) {
+                color = "var(--color-warning)";
+                glowColor = "rgba(245, 158, 11, 0.35)";
+            }
+        } else if (sliderId === "pregnancies") {
+            if (value > 6) {
+                color = "var(--color-danger)";
+                glowColor = "rgba(239, 68, 68, 0.35)";
+            } else if (value > 3) {
+                color = "var(--color-warning)";
+                glowColor = "rgba(245, 158, 11, 0.35)";
+            }
+        } else if (sliderId === "skin_thickness") {
+            if (value >= 30) {
+                color = "var(--color-danger)";
+                glowColor = "rgba(239, 68, 68, 0.35)";
+            } else if (value >= 20) {
+                color = "var(--color-warning)";
+                glowColor = "rgba(245, 158, 11, 0.35)";
+            }
+        } else if (sliderId === "diabetes_pedigree") {
+            if (value > 0.7) {
+                color = "var(--color-danger)";
+                glowColor = "rgba(239, 68, 68, 0.35)";
+            } else if (value > 0.35) {
+                color = "var(--color-warning)";
+                glowColor = "rgba(245, 158, 11, 0.35)";
+            }
+        }
+
+        inputEl.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, rgba(255, 255, 255, 0.1) ${pct}%, rgba(255, 255, 255, 0.1) 100%)`;
+        displayEl.style.borderColor = color;
+        displayEl.style.color = color;
+        displayEl.style.boxShadow = `0 0 10px ${glowColor}`;
+
+        const indicatorEl = document.getElementById(`${sliderId}-indicator`);
+        if (indicatorEl) {
+            indicatorEl.className = "status-indicator-dot";
+            if (color === "var(--color-danger)") {
+                indicatorEl.classList.add("status-critical");
+            } else if (color === "var(--color-warning)") {
+                indicatorEl.classList.add("status-borderline");
+            } else {
+                indicatorEl.classList.add("status-optimal");
+            }
+        }
+    }
+
     // Initialize/Sync Slider displays
     sliders.forEach(slider => {
         const inputEl = document.getElementById(slider.id);
@@ -110,6 +281,14 @@ function initIntakePage() {
                 const cb = document.querySelector(`.unknown-checkbox[data-target="${slider.id}"]`);
                 if (cb && cb.checked) {
                     displayEl.textContent = "Unknown";
+                    displayEl.style.borderColor = "";
+                    displayEl.style.color = "";
+                    displayEl.style.boxShadow = "";
+                    inputEl.style.background = "";
+                    const indicatorEl = document.getElementById(`${slider.id}-indicator`);
+                    if (indicatorEl) {
+                        indicatorEl.className = "status-indicator-dot status-unknown";
+                    }
                     return;
                 }
                 
@@ -119,6 +298,11 @@ function initIntakePage() {
                 } else {
                     displayEl.textContent = parseInt(val, 10);
                 }
+
+                // Update dynamic colors and glows
+                const min = parseFloat(inputEl.min) || 0;
+                const max = parseFloat(inputEl.max) || 100;
+                updateSliderGlow(slider.id, val, min, max, displayEl, inputEl);
             });
             // Initial trigger
             inputEl.dispatchEvent(new Event("input"));
@@ -132,11 +316,15 @@ function initIntakePage() {
             const targetId = e.target.getAttribute("data-target");
             const inputEl = document.getElementById(targetId);
             const displayEl = document.getElementById(`${targetId}-val`);
+            const indicatorEl = document.getElementById(`${targetId}-indicator`);
 
             if (e.target.checked) {
                 inputEl.disabled = true;
                 displayEl.textContent = "Unknown";
                 displayEl.classList.add("unknown");
+                if (indicatorEl) {
+                    indicatorEl.className = "status-indicator-dot status-unknown";
+                }
             } else {
                 inputEl.disabled = false;
                 displayEl.classList.remove("unknown");
@@ -172,6 +360,10 @@ function initIntakePage() {
                 if (pregnanciesDisplay) {
                     pregnanciesDisplay.textContent = "0";
                     pregnanciesDisplay.classList.remove("unknown");
+                }
+                const pregIndicator = document.getElementById("pregnancies-indicator");
+                if (pregIndicator) {
+                    pregIndicator.className = "status-indicator-dot status-unknown";
                 }
                 if (pregHelpText) {
                     pregHelpText.textContent = "Not applicable (Male record auto-zeroed)";
@@ -334,6 +526,9 @@ function initIntakePage() {
 /**
  * REPORT PAGE LOGIC
  */
+/**
+ * REPORT PAGE LOGIC
+ */
 function initReportPage() {
     const analysisStr = localStorage.getItem("last_analysis");
     const inputsStr = localStorage.getItem("last_inputs");
@@ -348,14 +543,28 @@ function initReportPage() {
     const data = JSON.parse(analysisStr);
     const inputs = JSON.parse(inputsStr);
 
+    // Initial page load layout updates
+    updateReportUIData(data, inputs, patientSex);
+
+    // 1. Initialise Speech Synthesis for the AI consult narrative
+    initSpeechScribe();
+
+    // 2. Initialise What-If Sandbox sliders
+    initSandboxPanel(inputs, patientSex);
+}
+
+/**
+ * Update report screen DOM elements with analysis results
+ */
+function updateReportUIData(data, inputs, patientSex) {
     const prediction = data.prediction || {};
     const metrics = data.metrics || {};
     const explainability = data.explainability || {};
 
     // Generate and display dynamic patient reference details
     const randomId = "PT-" + Math.floor(1000 + Math.random() * 9000) + String.fromCharCode(65 + Math.floor(Math.random() * 26));
-    const ageVal = inputs.age !== null ? `${inputs.age} yrs` : "Unknown";
-    const bmiVal = inputs.bmi !== null ? `${inputs.bmi.toFixed(1)} BMI` : "Unknown";
+    const ageVal = inputs.age !== null && inputs.age !== undefined ? `${inputs.age} yrs` : "Unknown";
+    const bmiVal = inputs.bmi !== null && inputs.bmi !== undefined ? `${inputs.bmi.toFixed(1)} BMI` : "Unknown";
     const sexVal = patientSex.charAt(0).toUpperCase() + patientSex.slice(1);
     
     // Add reference details somewhere in the header dynamically
@@ -373,10 +582,10 @@ function initReportPage() {
     
     // Set risk classification badge details
     const badge = document.getElementById("risk-badge");
+    let themeColor = "var(--color-success)";
     if (badge) {
         let riskClass = "low";
         let badgeText = "Low Risk";
-        let themeColor = "var(--color-success)";
 
         if (riskPercentage >= 60) {
             riskClass = "high";
@@ -390,23 +599,21 @@ function initReportPage() {
 
         badge.className = `risk-level-badge ${riskClass}`;
         badge.textContent = badgeText;
+    }
 
-        // 2. Animate Circular Risk Gauge
-        const circle = document.getElementById("risk-gauge-ring");
-        if (circle) {
-            const radius = circle.r.baseVal.value;
-            const circumference = 2 * Math.PI * radius;
-            
-            // Set stroke configuration
-            circle.style.strokeDasharray = `${circumference} ${circumference}`;
-            circle.style.stroke = themeColor;
-            
-            // Animate progress ring load after a slight delay
-            setTimeout(() => {
-                const offset = circumference - (riskPercentage / 100) * circumference;
-                circle.style.strokeDashoffset = offset;
-            }, 100);
-        }
+    // 2. Animate Circular Risk Gauge
+    const circle = document.getElementById("risk-gauge-ring");
+    if (circle) {
+        const radius = circle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+        
+        // Set stroke configuration
+        circle.style.strokeDasharray = `${circumference} ${circumference}`;
+        circle.style.stroke = themeColor;
+        
+        // Animate progress ring load
+        const offset = circumference - (riskPercentage / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
     }
 
     // 3. Populate Primary Risk Drivers
@@ -461,10 +668,12 @@ function initReportPage() {
             // Interactive toggle state
             item.addEventListener("click", () => {
                 item.classList.toggle("completed");
+                updateCarePlanProgress();
             });
 
             carePlanListContainer.appendChild(item);
         });
+        updateCarePlanProgress(); // Initial progress calculation
     }
 
     // 5. Render custom horizontal SHAP Bar Chart
@@ -473,10 +682,10 @@ function initReportPage() {
         renderShapChart(explainability.raw_shap_contributions);
     }
 
-    // 5b. Initialise 3D Anatomy Visualizer (Supports WebGL / Canvas Fallback)
+    // 6. Initialise 3D Anatomy Visualizer (WebGL / Canvas Fallback)
     init3DAnatomy("anatomy-3d-container", riskPercentage);
 
-    // Inject AI consult narrative
+    // 7. Inject AI consult narrative
     const narrativeContainer = document.getElementById("ai-narrative-text");
     if (narrativeContainer) {
         const narrativeText = data.ai_patient_report || data.clinical_narrative;
@@ -487,16 +696,18 @@ function initReportPage() {
         }
     }
 
-    // 6. Action Button Listeners
+    // 8. Action Button Listeners (Only bind once on initial page load)
     const btnNewTest = document.getElementById("btn-new-test");
-    if (btnNewTest) {
+    if (btnNewTest && !btnNewTest.dataset.bound) {
+        btnNewTest.dataset.bound = "true";
         btnNewTest.addEventListener("click", () => {
             window.location.href = "intake.html";
         });
     }
 
     const btnPrint = document.getElementById("btn-print");
-    if (btnPrint) {
+    if (btnPrint && !btnPrint.dataset.bound) {
+        btnPrint.dataset.bound = "true";
         btnPrint.addEventListener("click", () => {
             window.print();
         });
@@ -504,102 +715,314 @@ function initReportPage() {
 }
 
 /**
- * Simple parser to convert Markdown into HTML elements
+ * Update circular progress display in pathway checklist
  */
-function parseMarkdownToHtml(markdown) {
-    if (!markdown) return "";
+function updateCarePlanProgress() {
+    const list = document.getElementById("care-plan-list");
+    const progressFill = document.getElementById("care-progress-fill");
+    const progressPctText = document.getElementById("care-progress-pct");
+    if (!list || !progressFill || !progressPctText) return;
     
-    // Replace headers and bold texts
-    let processed = markdown
-        .replace(/### (.*)/g, '<h3>$1</h3>')
-        .replace(/#### (.*)/g, '<h4>$1</h4>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    const items = list.querySelectorAll(".care-plan-item");
+    const total = items.length;
+    if (total === 0) {
+        progressFill.style.width = "0%";
+        progressPctText.textContent = "0% Completed";
+        return;
+    }
+    
+    const completed = list.querySelectorAll(".care-plan-item.completed").length;
+    const pct = Math.round((completed / total) * 100);
+    
+    progressFill.style.width = `${pct}%`;
+    progressPctText.textContent = `${pct}% Completed`;
+}
+
+/**
+ * Build dynamic controls for clinical sandbox mode
+ */
+function initSandboxPanel(inputs, patientSex) {
+    const sandboxGrid = document.getElementById("sandbox-grid");
+    if (!sandboxGrid) return;
+    
+    sandboxGrid.innerHTML = "";
+    
+    const sandboxMetrics = [
+        { id: "pregnancies", label: "Pregnancies", min: 0, max: 17, step: 1, isFloat: false },
+        { id: "glucose", label: "Plasma Glucose (mg/dL)", min: 0, max: 300, step: 1, isFloat: false },
+        { id: "blood_pressure", label: "Diastolic BP (mmHg)", min: 0, max: 200, step: 1, isFloat: false },
+        { id: "skin_thickness", label: "Skin Fold Thickness (mm)", min: 0, max: 100, step: 1, isFloat: false },
+        { id: "insulin", label: "2-Hour Insulin (mu U/ml)", min: 0, max: 900, step: 5, isFloat: false },
+        { id: "bmi", label: "Body Mass Index (BMI)", min: 0, max: 70, step: 0.1, isFloat: true },
+        { id: "diabetes_pedigree", label: "Pedigree Score", min: 0.05, max: 2.5, step: 0.001, isFloat: true, decimals: 3 },
+        { id: "age", label: "Patient Age (yrs)", min: 0, max: 120, step: 1, isFloat: false }
+    ];
+    
+    const isMale = patientSex === "male";
+    
+    function getDemoDefault(id) {
+        const defaults = {
+            pregnancies: 3,
+            glucose: 120,
+            blood_pressure: 72,
+            skin_thickness: 23,
+            insulin: 80,
+            bmi: 32.0,
+            diabetes_pedigree: 0.372,
+            age: 29
+        };
+        return defaults[id];
+    }
+    
+    sandboxMetrics.forEach(m => {
+        const isPreg = m.id === "pregnancies";
+        const initVal = isPreg && isMale ? 0 : (inputs[m.id] !== null && inputs[m.id] !== undefined ? inputs[m.id] : getDemoDefault(m.id));
+        const disabledAttr = isPreg && isMale ? "disabled" : "";
         
-    const lines = processed.split('\n');
-    let inList = false;
-    let htmlOutput = "";
-    
-    lines.forEach(line => {
-        let trimmed = line.trim();
-        if (trimmed.startsWith('- ')) {
-            if (!inList) {
-                htmlOutput += "<ul>";
-                inList = true;
-            }
-            htmlOutput += `<li>${trimmed.substring(2)}</li>`;
-        } else {
-            if (inList) {
-                htmlOutput += "</ul>";
-                inList = false;
-            }
-            if (trimmed) {
-                if (trimmed.startsWith('<h3') || trimmed.startsWith('<h4') || trimmed.startsWith('<ul') || trimmed.startsWith('<li')) {
-                    htmlOutput += trimmed;
+        const row = document.createElement("div");
+        row.className = "sandbox-slider-row";
+        if (isPreg && isMale) {
+            row.style.display = "none";
+        }
+        
+        row.innerHTML = `
+            <div class="sandbox-label-container">
+                <span class="sandbox-label">
+                    <span class="status-indicator-dot" id="sandbox-${m.id}-indicator"></span>
+                    <span>${m.label}</span>
+                </span>
+                <span class="sandbox-value" id="sandbox-${m.id}-val">${m.isFloat ? initVal.toFixed(m.decimals || 1) : initVal}</span>
+            </div>
+            <div class="slider-container">
+                <input type="range" id="sandbox-${m.id}" min="${m.min}" max="${m.max}" step="${m.step}" value="${initVal}" ${disabledAttr} class="form-slider">
+            </div>
+        `;
+        sandboxGrid.appendChild(row);
+        
+        // Dynamic event listeners for sandbox sliders
+        const sliderInput = document.getElementById(`sandbox-${m.id}`);
+        const valueDisplay = document.getElementById(`sandbox-${m.id}-val`);
+        
+        if (sliderInput && valueDisplay) {
+            sliderInput.addEventListener("input", (e) => {
+                let val = parseFloat(e.target.value);
+                if (m.isFloat) {
+                    valueDisplay.textContent = val.toFixed(m.decimals || 1);
                 } else {
-                    htmlOutput += `<p>${trimmed}</p>`;
+                    valueDisplay.textContent = parseInt(val, 10);
                 }
+                updateSandboxSliderGlow(m.id, val, m.min, m.max);
+                triggerSandboxRecalc();
+            });
+            // Trigger initial styling
+            updateSandboxSliderGlow(m.id, parseFloat(sliderInput.value), m.min, m.max);
+        }
+    });
+
+    // Debounce timer for sandbox API triggers
+    let sandboxTimeout;
+    function triggerSandboxRecalc() {
+        clearTimeout(sandboxTimeout);
+        sandboxTimeout = setTimeout(runSandboxRecalc, 350);
+    }
+    
+    async function runSandboxRecalc() {
+        const payload = {
+            pregnancies: isMale ? 0 : parseInt(document.getElementById("sandbox-pregnancies").value),
+            glucose: parseFloat(document.getElementById("sandbox-glucose").value),
+            blood_pressure: parseFloat(document.getElementById("sandbox-blood_pressure").value),
+            skin_thickness: parseFloat(document.getElementById("sandbox-skin_thickness").value),
+            insulin: parseFloat(document.getElementById("sandbox-insulin").value),
+            bmi: parseFloat(document.getElementById("sandbox-bmi").value),
+            diabetes_pedigree: parseFloat(document.getElementById("sandbox-diabetes_pedigree").value),
+            age: parseInt(document.getElementById("sandbox-age").value)
+        };
+        
+        // Show subtle visual working indicator inside Sandbox card
+        const resetBtn = document.getElementById("sandbox-reset-btn");
+        if (resetBtn) resetBtn.textContent = "Recalculating...";
+        
+        try {
+            const response = await fetch("/api/v1/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) throw new Error("Sandbox fetch error");
+            const data = await response.json();
+            
+            // Redraw dashboard components reactively!
+            updateReportUIData(data, payload, patientSex);
+            
+            // Inform user sandbox recalculation is complete
+            if (resetBtn) resetBtn.textContent = "Reset Intake";
+        } catch (e) {
+            console.error("Sandbox recalculation failed: ", e);
+            if (resetBtn) resetBtn.textContent = "Recalc Error";
+        }
+    }
+    
+    // Bind reset button
+    const resetBtn = document.getElementById("sandbox-reset-btn");
+    if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+            sandboxMetrics.forEach(m => {
+                const isPreg = m.id === "pregnancies";
+                const initVal = isPreg && isMale ? 0 : (inputs[m.id] !== null && inputs[m.id] !== undefined ? inputs[m.id] : getDemoDefault(m.id));
+                const inputEl = document.getElementById(`sandbox-${m.id}`);
+                if (inputEl) {
+                    inputEl.value = initVal;
+                    // Trigger input event to update label text and glow
+                    inputEl.dispatchEvent(new Event("input"));
+                }
+            });
+            triggerSandboxRecalc();
+        });
+    }
+}
+
+/**
+ * Handle visual background and glow tracking for Sandbox sliders
+ */
+function updateSandboxSliderGlow(id, val, min, max) {
+    const inputEl = document.getElementById(`sandbox-${id}`);
+    const displayEl = document.getElementById(`sandbox-${id}-val`);
+    const indicatorEl = document.getElementById(`sandbox-${id}-indicator`);
+    if (!inputEl || !displayEl) return;
+    
+    const pct = ((val - min) / (max - min)) * 100;
+    let color = "var(--color-teal)"; // Green/teal default
+    let indicatorClass = "status-optimal";
+    
+    if (id === "glucose") {
+        if (val > 125) { color = "var(--color-danger)"; indicatorClass = "status-critical"; }
+        else if (val > 99) { color = "var(--color-warning)"; indicatorClass = "status-borderline"; }
+    } else if (id === "bmi") {
+        if (val >= 30) { color = "var(--color-danger)"; indicatorClass = "status-critical"; }
+        else if (val >= 25) { color = "var(--color-warning)"; indicatorClass = "status-borderline"; }
+    } else if (id === "blood_pressure") {
+        if (val >= 90) { color = "var(--color-danger)"; indicatorClass = "status-critical"; }
+        else if (val >= 80) { color = "var(--color-warning)"; indicatorClass = "status-borderline"; }
+    } else if (id === "insulin") {
+        if (val > 250) { color = "var(--color-danger)"; indicatorClass = "status-critical"; }
+        else if (val > 140) { color = "var(--color-warning)"; indicatorClass = "status-borderline"; }
+    } else if (id === "age") {
+        if (val >= 50) { color = "var(--color-danger)"; indicatorClass = "status-critical"; }
+        else if (val >= 35) { color = "var(--color-warning)"; indicatorClass = "status-borderline"; }
+    } else if (id === "pregnancies") {
+        if (val > 6) { color = "var(--color-danger)"; indicatorClass = "status-critical"; }
+        else if (val > 3) { color = "var(--color-warning)"; indicatorClass = "status-borderline"; }
+    } else if (id === "skin_thickness") {
+        if (val >= 30) { color = "var(--color-danger)"; indicatorClass = "status-critical"; }
+        else if (val >= 20) { color = "var(--color-warning)"; indicatorClass = "status-borderline"; }
+    } else if (id === "diabetes_pedigree") {
+        if (val > 0.7) { color = "var(--color-danger)"; indicatorClass = "status-critical"; }
+        else if (val > 0.35) { color = "var(--color-warning)"; indicatorClass = "status-borderline"; }
+    }
+
+    inputEl.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, rgba(255, 255, 255, 0.1) ${pct}%, rgba(255, 255, 255, 0.1) 100%)`;
+    displayEl.style.color = color;
+    if (indicatorEl) {
+        indicatorEl.className = `status-indicator-dot ${indicatorClass}`;
+    }
+}
+
+/**
+ * Voice synthesis clinical narrator console
+ */
+function initSpeechScribe() {
+    const playBtn = document.getElementById("btn-voice-play");
+    if (!playBtn) return;
+    
+    // Check if voice listeners are already bound to prevent double click triggers
+    if (playBtn.dataset.speechBound) return;
+    playBtn.dataset.speechBound = "true";
+
+    const btnText = playBtn.querySelector(".audio-btn-text");
+    const btnIcon = playBtn.querySelector(".audio-icon");
+    const soundwave = document.getElementById("soundwave-anim");
+    
+    let synth = window.speechSynthesis;
+    let isSpeaking = false;
+    let currentUtterance = null;
+    
+    playBtn.addEventListener("click", () => {
+        if (!synth) {
+            alert("Browser Text-to-Speech synthesis is not supported on this device.");
+            return;
+        }
+        
+        if (isSpeaking) {
+            synth.cancel();
+            isSpeaking = false;
+            if (btnText) btnText.textContent = "Listen Report";
+            if (btnIcon) btnIcon.textContent = "🔊";
+            if (soundwave) soundwave.classList.remove("playing");
+        } else {
+            const narrativeContainer = document.getElementById("ai-narrative-text");
+            if (!narrativeContainer) return;
+            
+            // Clean markdown bold tags and bullet formats for smooth dictation
+            const textToRead = narrativeContainer.textContent
+                .replace(/[\n\r]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+                
+            if (!textToRead || textToRead.startsWith("No narrative")) {
+                alert("No clinical description text found to narrate.");
+                return;
             }
-        }
-    });
-    
-    if (inList) {
-        htmlOutput += "</ul>";
-    }
-    
-    return htmlOutput;
-}
-
-/**
- * Utility to map dataframe feature keys to reader-friendly terms
- */
-function getFriendlyName(key) {
-    const mappings = {
-        Pregnancies: "Pregnancies",
-        Glucose: "Glucose Level",
-        BloodPressure: "Blood Pressure",
-        SkinThickness: "Skin Fold Thickness",
-        Insulin: "2-Hour Insulin",
-        BMI: "Body Mass Index",
-        DiabetesPedigreeFunction: "Pedigree (Genetic Index)",
-        Age: "Patient Age"
-    };
-    return mappings[key] || key;
-}
-
-/**
- * Generate medical context recommendations based on specific SHAP risk drivers
- */
-function generateRecommendations(drivers, score) {
-    const recs = [];
-
-    if (score >= 60) {
-        recs.push("Schedule a comprehensive diagnostic evaluation, including HbA1c and fasting plasma glucose tests, to confirm clinical status.");
-        recs.push("Recommend immediate review by an endocrinologist and a registered dietitian to establish glycemic control programs.");
-    } else if (score >= 30) {
-        recs.push("Recommend regular diagnostic screenings (every 6 to 12 months) to monitor glycemic variations.");
-        recs.push("Encourage preventive lifestyle modifications focusing on dietary fiber intake and moderate physical exercise.");
-    } else {
-        recs.push("Maintain standard wellness evaluations and routine checkups.");
-        recs.push("Advise maintaining stable healthy nutrition and balanced physical activities.");
-    }
-
-    // Specific feature checks
-    drivers.forEach(driver => {
-        if (driver === "Glucose") {
-            recs.push("Prioritize restriction of high-glycemic carbohydrates and monitor blood sugar levels pre- and post-meals.");
-        }
-        if (driver === "BMI") {
-            recs.push("Collaborate on weight management pathways targeting a 5-10% gradual reduction in body mass.");
-        }
-        if (driver === "BloodPressure") {
-            recs.push("Adopt dietary patterns (such as DASH diet) aimed at reducing sodium intake and managing blood pressure below 130/80 mm Hg.");
-        }
-        if (driver === "DiabetesPedigreeFunction") {
-            recs.push("Consider family medical counseling to evaluate genetic patterns of endocrine complications.");
+            
+            synth.cancel(); // Stop any other speech
+            
+            currentUtterance = new SpeechSynthesisUtterance(textToRead);
+            
+            // Choose a clear English system voice
+            const voices = synth.getVoices();
+            const voice = voices.find(v => 
+                v.name.includes("Google US English") || 
+                v.name.includes("Samantha") || 
+                v.name.includes("Hazel") ||
+                v.lang.startsWith("en-US")
+            );
+            if (voice) {
+                currentUtterance.voice = voice;
+            }
+            
+            currentUtterance.rate = 1.0;
+            currentUtterance.pitch = 1.0;
+            
+            currentUtterance.onstart = () => {
+                isSpeaking = true;
+                if (btnText) btnText.textContent = "Stop Listening";
+                if (btnIcon) btnIcon.textContent = "⏹️";
+                if (soundwave) soundwave.classList.add("playing");
+            };
+            
+            currentUtterance.onend = () => {
+                isSpeaking = false;
+                if (btnText) btnText.textContent = "Listen Report";
+                if (btnIcon) btnIcon.textContent = "🔊";
+                if (soundwave) soundwave.classList.remove("playing");
+            };
+            
+            currentUtterance.onerror = (e) => {
+                console.error("Narrator error:", e);
+                isSpeaking = false;
+                if (btnText) btnText.textContent = "Listen Report";
+                if (btnIcon) btnIcon.textContent = "🔊";
+                if (soundwave) soundwave.classList.remove("playing");
+            };
+            
+            synth.speak(currentUtterance);
         }
     });
 
-    return recs;
+    // Make sure we stop reading if the user closes/navigates away
+    window.addEventListener("beforeunload", () => {
+        if (synth) synth.cancel();
+    });
 }
 
 /**
@@ -611,6 +1034,9 @@ function renderShapChart(contributions) {
     
     container.innerHTML = "";
 
+    const inputsStr = localStorage.getItem("last_inputs");
+    const inputs = inputsStr ? JSON.parse(inputsStr) : {};
+
     // Find the maximum absolute SHAP value to normalize the width calculations
     let maxAbsValue = 0.05; // Set base minimum to avoid division by zero
     Object.keys(contributions).forEach(key => {
@@ -619,6 +1045,8 @@ function renderShapChart(contributions) {
             maxAbsValue = val;
         }
     });
+
+    const tooltip = document.getElementById("shap-tooltip");
 
     // Generate bar rows for each feature
     Object.keys(contributions).forEach((key, index) => {
@@ -661,6 +1089,61 @@ function renderShapChart(contributions) {
         valueDisplay.textContent = (isPositive ? "+" : "") + value.toFixed(3);
         row.appendChild(valueDisplay);
 
+        // Tooltip interaction handlers
+        row.addEventListener("mouseenter", (e) => {
+            if (!tooltip) return;
+            
+            // Try to read current value from Sandbox slider first, else fallback to initial inputs
+            let currentValStr = "Unknown";
+            const sandboxInput = document.getElementById(`sandbox-${key.toLowerCase()}`);
+            if (sandboxInput) {
+                currentValStr = sandboxInput.value;
+            } else if (inputs[key.toLowerCase()] !== undefined && inputs[key.toLowerCase()] !== null) {
+                currentValStr = inputs[key.toLowerCase()];
+            } else {
+                // Check exact mapping
+                const lowerKey = key.toLowerCase();
+                const mappedKeys = {
+                    pregnancies: "pregnancies",
+                    glucose: "glucose",
+                    bloodpressure: "blood_pressure",
+                    skinthickness: "skin_thickness",
+                    insulin: "insulin",
+                    bmi: "bmi",
+                    diabetespedigreefunction: "diabetes_pedigree",
+                    age: "age"
+                };
+                const fieldName = mappedKeys[lowerKey];
+                if (fieldName && inputs[fieldName] !== undefined && inputs[fieldName] !== null) {
+                    currentValStr = inputs[fieldName];
+                }
+            }
+
+            const definition = getFeatureExplanation(key);
+            const friendlyName = getFriendlyName(key);
+
+            tooltip.innerHTML = `
+                <div class="shap-tooltip-title">${friendlyName}</div>
+                <div class="shap-tooltip-detail"><strong>Patient Value:</strong> ${currentValStr}</div>
+                <div class="shap-tooltip-detail" style="margin-top: 0.35rem; color: var(--color-text-main); font-size: 0.8rem;">${definition}</div>
+                <div class="shap-tooltip-impact ${isPositive ? 'positive' : 'negative'}" style="margin-top: 0.5rem; font-size: 0.8rem;">
+                    <strong>Impact:</strong> ${isPositive ? 'Elevated' : 'Reduced'} Predicted Risk by <strong>${Math.abs(value * 100).toFixed(2)}%</strong>
+                </div>
+            `;
+            tooltip.classList.add("show");
+        });
+
+        row.addEventListener("mousemove", (e) => {
+            if (!tooltip) return;
+            tooltip.style.left = `${e.pageX}px`;
+            tooltip.style.top = `${e.pageY}px`;
+        });
+
+        row.addEventListener("mouseleave", () => {
+            if (!tooltip) return;
+            tooltip.classList.remove("show");
+        });
+
         container.appendChild(row);
 
         // Animate the widths sequentially
@@ -668,6 +1151,23 @@ function renderShapChart(contributions) {
             fill.style.width = `${percentageWidth}%`;
         }, 100 + (index * 80)); // Cascading delay effect
     });
+}
+
+/**
+ * Medical clinical explanations of input features for tooltips
+ */
+function getFeatureExplanation(key) {
+    const explanations = {
+        Pregnancies: "Reflects parity. High numbers correlate with historical insulin-resistant metabolic states during gestational terms.",
+        Glucose: "2-hour oral glucose tolerance test (OGTT). The primary diagnostic indicator for glycemic clearance speed and insulin capacity.",
+        BloodPressure: "Diastolic blood pressure. Elevated diastolic tension indicates peripheral vascular resistance and cardiorenal stress.",
+        SkinThickness: "Triceps skin fold thickness. Quantitative subcutaneous adipose indicator correlating with systemic fat deposits.",
+        Insulin: "2-hour post-glucose serum insulin. High levels show beta-cell stress, hyperinsulinemia, and insulin resistance.",
+        BMI: "Body Mass Index. Height-to-weight ratio. High BMI is strongly linked to cellular receptor blockages and metabolic stress.",
+        DiabetesPedigreeFunction: "Family pedigree coefficient. Measures genetic predisposition to diabetes based on family health history.",
+        Age: "Biological age. Cellular aging rises alongside natural decreases in glycemic clearance rates and insulin receptor sensitivity."
+    };
+    return explanations[key] || "Clinical metabolic metric evaluated by the machine learning model.";
 }
 
 /**

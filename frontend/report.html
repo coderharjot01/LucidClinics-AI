@@ -64,6 +64,20 @@
                     <div class="visualizer-status" id="visualizer-status-text">Initialising 3D viewport...</div>
                 </div>
 
+                <!-- Clinical Sandbox Simulator Card (What-If Analysis) -->
+                <div class="card sandbox-card float-bob-3" style="padding: 1.5rem;">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-cyan); margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span>⚙️ What-If Clinical Sandbox</span>
+                        <span class="sandbox-reset-btn" id="sandbox-reset-btn" title="Reset to original values">Reset Intake</span>
+                    </h3>
+                    <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.25rem;">
+                        Simulate alternative therapeutic scenarios. Adjust parameters below to recalculate risk scores, metabolic speeds, and SHAP drivers dynamically.
+                    </p>
+                    <div class="sandbox-grid" id="sandbox-grid" style="display: flex; flex-direction: column; gap: 0.9rem;">
+                        <!-- Populated dynamically by app.js -->
+                    </div>
+                </div>
+
                 <!-- Primary Risk Drivers Card -->
                 <div class="card" style="padding: 1.5rem;">
                     <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-cyan); margin-bottom: 0.5rem;">Primary Risk Drivers</h3>
@@ -126,6 +140,18 @@
                     <p style="color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
                         Actionable guidelines checklists generated dynamically based on patient diagnostic indicators. Clinicians can review and sign off on tasks.
                     </p>
+                    
+                    <!-- Care Plan Progress Header -->
+                    <div class="care-plan-progress-header">
+                        <div class="care-plan-progress-text">
+                            <span>Clinical Task Checklist</span>
+                            <span id="care-progress-pct" style="color: var(--color-success); font-weight: 700;">0% Completed</span>
+                        </div>
+                        <div class="care-progress-bar-bg">
+                            <div class="care-progress-bar-fill" id="care-progress-fill"></div>
+                        </div>
+                    </div>
+
                     <div class="care-plan-list" id="care-plan-list">
                         <!-- Populated dynamically by app.js -->
                     </div>
@@ -139,6 +165,25 @@
                     <p style="color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
                         This narrative is synthesized by an LLM combining your specific clinical parameters, XGBoost risk classification, SHAP explanation contributions, and official ADA guidelines.
                     </p>
+                    
+                    <!-- Audio Consultation Console -->
+                    <div class="audio-scribe-console">
+                        <button class="audio-btn" id="btn-voice-play" title="Listen to AI Consultation">
+                            <span class="audio-icon">🔊</span>
+                            <span class="audio-btn-text">Listen Report</span>
+                        </button>
+                        <div class="soundwave-container" id="soundwave-anim">
+                            <span class="soundwave-bar"></span>
+                            <span class="soundwave-bar"></span>
+                            <span class="soundwave-bar"></span>
+                            <span class="soundwave-bar"></span>
+                            <span class="soundwave-bar"></span>
+                            <span class="soundwave-bar"></span>
+                            <span class="soundwave-bar"></span>
+                            <span class="soundwave-bar"></span>
+                        </div>
+                    </div>
+
                     <div id="ai-narrative-text" class="ai-narrative-text-box">
                         <div class="skeleton-text"></div>
                         <div class="skeleton-text" style="width: 85%;"></div>
@@ -162,6 +207,9 @@
         </div>
 
     </div>
+
+    <!-- Global Interactive SHAP Tooltip -->
+    <div id="shap-tooltip" class="shap-tooltip"></div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
