@@ -783,53 +783,186 @@ header {
 /* Print Layout Customizations */
 @media print {
     body {
-        background: white !important;
-        color: black !important;
-        font-size: 12pt;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-size: 11pt !important;
+        line-height: 1.5 !important;
     }
     
-    body::before, body::after, .btn, .nav-link, header {
+    body::before, body::after, .btn, .nav-link, .visualizer-3d-card {
         display: none !important;
     }
     
+    header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border-bottom: 2px solid #0f172a !important;
+        padding-bottom: 0.75rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    header nav {
+        display: none !important;
+    }
+    
+    header .logo {
+        background: none !important;
+        -webkit-text-fill-color: #0f172a !important;
+        color: #0f172a !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    
     .container {
-        padding: 0;
-        max-width: 100%;
+        padding: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    .hero {
+        text-align: left !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .hero h1 {
+        font-size: 2.2rem !important;
+        background: none !important;
+        -webkit-text-fill-color: #0f172a !important;
+        color: #0f172a !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .hero p {
+        font-size: 10pt !important;
+        color: #475569 !important;
+    }
+    
+    /* 2-Column Grid Layout for Print */
+    .report-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1.5rem !important;
+        margin-top: 1rem !important;
+    }
+    
+    .sidebar-panel {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.5rem !important;
     }
     
     .card {
-        background: none !important;
-        border: none !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
         box-shadow: none !important;
         backdrop-filter: none !important;
-        padding: 1.5rem 0 !important;
+        padding: 1.25rem !important;
+        border-radius: 8px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        color: #0f172a !important;
     }
 
     .card::before {
-        display: none;
+        display: none !important;
+    }
+    
+    .section-title {
+        font-size: 1.2rem !important;
+        margin-bottom: 1rem !important;
+        border-left: 3px solid #0f172a !important;
+        padding-left: 0.5rem !important;
+        color: #0f172a !important;
     }
 
-    .report-grid {
-        grid-template-columns: 1fr;
-        gap: 0;
+    /* Risk Gauge alignment in print */
+    .risk-gauge-container {
+        padding: 1.25rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
-
+    
     .gauge-svg-wrapper {
-        border: 2px solid #ccc;
-        border-radius: 50%;
+        width: 160px !important;
+        height: 160px !important;
+        margin-bottom: 1rem !important;
+        border: none !important;
     }
-
+    
+    .gauge-svg {
+        width: 160px !important;
+        height: 160px !important;
+    }
+    
     .gauge-track {
-        stroke: #eee;
+        stroke: #e2e8f0 !important;
+        stroke-width: 16 !important;
     }
-
+    
     .gauge-progress {
-        filter: none;
+        stroke-width: 16 !important;
+        filter: none !important;
+    }
+    
+    .gauge-percentage {
+        font-size: 2.2rem !important;
+        color: #0f172a !important;
+        font-weight: 800 !important;
     }
 
+    .gauge-label {
+        font-size: 0.75rem !important;
+        color: #64748b !important;
+    }
+    
+    .risk-level-badge {
+        padding: 0.25rem 0.75rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        border-radius: 4px !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .risk-level-badge.low {
+        background: #f0fdf4 !important;
+        color: #166534 !important;
+        border: 1px solid #bbf7d0 !important;
+    }
+    
+    .risk-level-badge.moderate {
+        background: #fffbeb !important;
+        color: #92400e !important;
+        border: 1px solid #fde68a !important;
+    }
+    
+    .risk-level-badge.high {
+        background: #fef2f2 !important;
+        color: #991b1b !important;
+        border: 1px solid #fecaca !important;
+    }
+
+    /* SHAP Bar Chart print styles */
+    .shap-bar-row {
+        grid-template-columns: 110px 1fr 50px !important;
+        gap: 0.5rem !important;
+    }
+    
+    .shap-bar-label {
+        font-size: 0.8rem !important;
+        color: #0f172a !important;
+    }
+    
     .shap-bar-wrapper {
         background: #f1f5f9 !important;
-        border: 1px solid #cbd5e1;
+        border: 1px solid #e2e8f0 !important;
+        height: 18px !important;
+    }
+    
+    .shap-bar-axis {
+        background: #cbd5e1 !important;
     }
 
     .shap-bar-fill.positive {
@@ -838,6 +971,10 @@ header {
 
     .shap-bar-fill.negative {
         background: #0ea5e9 !important;
+    }
+
+    .shap-bar-value {
+        font-size: 0.75rem !important;
     }
 
     .shap-bar-value.positive {
@@ -852,10 +989,67 @@ header {
         background: #fef2f2 !important;
         border: 1px solid #fca5a5 !important;
         color: #991b1b !important;
+        font-size: 0.8rem !important;
+        padding: 0.25rem 0.5rem !important;
     }
     
+    .clinical-notes li {
+        font-size: 0.8rem !important;
+        color: #334155 !important;
+    }
+    
+    /* Show AI Consult Card with high readability */
     .ai-consult-card {
-        display: none !important; /* Hide AI consult in printer output */
+        display: block !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    
+    .ai-consult-card h2.section-title {
+        border-left-color: #8b5cf6 !important;
+    }
+
+    .ai-narrative-text-box {
+        font-size: 9.5pt !important;
+        line-height: 1.5 !important;
+        color: #1e293b !important;
+    }
+    
+    .ai-narrative-text-box h3 {
+        font-size: 1.1rem !important;
+        color: #0f172a !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        margin-top: 1rem !important;
+        padding-bottom: 0.25rem !important;
+    }
+    
+    .ai-narrative-text-box h4 {
+        font-size: 0.95rem !important;
+        color: #0f172a !important;
+        margin-top: 0.75rem !important;
+    }
+
+    /* Care Plan print styling */
+    .care-plan-item {
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 0.5rem 0 !important;
+    }
+
+    .care-plan-text {
+        font-size: 0.8rem !important;
+        color: #334155 !important;
+    }
+
+    .care-plan-checkbox {
+        border: 1.5px solid #64748b !important;
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    .care-plan-item.completed .care-plan-checkbox::after {
+        border-color: #166534 !important;
+        width: 3px !important;
+        height: 7px !important;
     }
 }
 
