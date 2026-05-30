@@ -1,0 +1,25 @@
+{
+  "Glucose": {
+    "title": "Clinical Diabetes & Plasma Glucose Interventions",
+    "recommendations": [
+      "For patients with fasting plasma glucose concentrations above 126 mg/dL: Initiate immediate clinical evaluation for Type 2 Diabetes.",
+      "Recommend dietary carbohydrate restriction, continuous glucose tracking, and consultation regarding formal medical therapy.",
+      "Encourage 150 minutes of moderate-intensity physical activity weekly to naturally enhance cell insulin sensitivity."
+    ]
+  },
+  "BMI": {
+    "title": "Metabolic Management & Obesity Guidelines",
+    "recommendations": [
+      "For patients with a Body Mass Index (BMI) exceeding 30.0 kg/m²: Prioritize a structural daily caloric deficit.",
+      "Incorporate structured resistance training weekly to preserve lean muscle mass during fat loss cycles.",
+      "Schedule comprehensive metabolic screenings to actively monitor for underlying insulin resistance."
+    ]
+  },
+  "Age": {
+    "title": "Geriatric & Age-Compounded Risk Protocols",
+    "recommendations": [
+      "Advanced age (above 45 years) compounds with existing sedentary lifestyle factors to accelerate pancreatic beta-cell dysfunction.",
+      "Patients in older cohorts with borderline high-risk metrics should receive screening intervals every 6 months."
+    ]
+  }
+}

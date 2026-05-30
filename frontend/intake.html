@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LucidClinics AI | Patient Intake Portal</title>
+    <meta name="description" content="Enter patient vital statistics and diagnostic indicators for real-time risk assessment.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header Section -->
+        <header>
+            <div class="logo">
+                <div class="logo-icon">L</div>
+                <span>LucidClinics <span style="color: var(--color-teal); font-weight: 400;">AI</span></span>
+            </div>
+            <nav style="display: flex; gap: 1rem;">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="intake.html" class="nav-link active">Assess Patient</a>
+                <a href="#" class="nav-link" id="nav-report-link" style="opacity: 0.6; cursor: not-allowed;">Clinical Report</a>
+            </nav>
+        </header>
+
+        <!-- Stepper Progress Header -->
+        <div class="stepper-wrapper">
+            <div class="stepper-step active" data-step="1">
+                <div class="step-num">1</div>
+                <div class="step-title">Profile</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="stepper-step" data-step="2">
+                <div class="step-num">2</div>
+                <div class="step-title">Vitals</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="stepper-step" data-step="3">
+                <div class="step-num">3</div>
+                <div class="step-title">Lab Metrics</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="stepper-step" data-step="4">
+                <div class="step-num">4</div>
+                <div class="step-title">Review</div>
+            </div>
+        </div>
+
+        <!-- Main Diagnostics Intake Layout -->
+        <main class="wizard-section" id="intake-section">
+            <!-- Diagnostics Form Card -->
+            <section class="card" id="form-card">
+                <form id="diagnostics-form">
+                    
+                    <!-- STEP 1: PATIENT PROFILE -->
+                    <div class="wizard-step-pane active" id="step-pane-1">
+                        <h2 class="pane-title">Step 1: Patient Profile & Demographics</h2>
+                        <p class="pane-desc">Record biological sex, age, and pregnancies. Note: pregnancies only apply to female profiles.</p>
+                        
+                        <div class="form-grid">
+                            <!-- Sex Selection -->
+                            <div class="form-group dropdown-group">
+                                <label class="form-label" for="patient_sex">Biological Sex</label>
+                                <select id="patient_sex" name="patient_sex" class="form-select">
+                                    <option value="female">Female</option>
+                                    <option value="male">Male</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <span class="form-help">Influences pregnancy validation rules</span>
+                            </div>
+
+                            <!-- Age -->
+                            <div class="form-group">
+                                <div class="form-label-container">
+                                    <label class="form-label" for="age">Patient Age</label>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <label class="unknown-checkbox-container">
+                                            <input type="checkbox" class="unknown-checkbox" data-target="age">
+                                            <span>Unknown</span>
+                                        </label>
+                                        <span class="form-value-display" id="age-val">29</span>
+                                    </div>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="age" name="age" min="0" max="120" value="29" class="form-slider">
+                                </div>
+                                <span class="form-help">Age in years</span>
+                            </div>
+
+                            <!-- Pregnancies -->
+                            <div class="form-group" id="pregnancies-group">
+                                <div class="form-label-container">
+                                    <label class="form-label" for="pregnancies">Pregnancies</label>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <label class="unknown-checkbox-container" id="preg-unknown-container">
+                                            <input type="checkbox" class="unknown-checkbox" data-target="pregnancies" id="pregnancies-unknown">
+                                            <span>Unknown</span>
+                                        </label>
+                                        <span class="form-value-display" id="pregnancies-val">3</span>
+                                    </div>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="pregnancies" name="pregnancies" min="0" max="17" value="3" class="form-slider">
+                                </div>
+                                <span class="form-help" id="pregnancies-help-text">Number of times pregnant</span>
+                            </div>
+                        </div>
+
+                        <!-- Stepper Actions -->
+                        <div class="wizard-actions" style="justify-content: flex-end;">
+                            <button type="button" class="btn btn-primary btn-next">Next: Physical Vitals</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: PHYSICAL VITALS -->
+                    <div class="wizard-step-pane" id="step-pane-2">
+                        <h2 class="pane-title">Step 2: Physical Vitals & Body Metrics</h2>
+                        <p class="pane-desc">Collect clinical vital signs and physical observations.</p>
+                        
+                        <div class="form-grid">
+                            <!-- Body Mass Index (BMI) -->
+                            <div class="form-group">
+                                <div class="form-label-container">
+                                    <label class="form-label" for="bmi">Body Mass Index (BMI)</label>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <label class="unknown-checkbox-container">
+                                            <input type="checkbox" class="unknown-checkbox" data-target="bmi">
+                                            <span>Unknown</span>
+                                        </label>
+                                        <span class="form-value-display" id="bmi-val">32.0</span>
+                                    </div>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="bmi" name="bmi" min="0" max="70" step="0.1" value="32.0" class="form-slider">
+                                </div>
+                                <span class="form-help">Weight in kg / height in m²</span>
+                            </div>
+
+                            <!-- Blood Pressure -->
+                            <div class="form-group">
+                                <div class="form-label-container">
+                                    <label class="form-label" for="blood_pressure">Diastolic Blood Pressure</label>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <label class="unknown-checkbox-container">
+                                            <input type="checkbox" class="unknown-checkbox" data-target="blood_pressure">
+                                            <span>Unknown</span>
+                                        </label>
+                                        <span class="form-value-display" id="blood_pressure-val">72</span>
+                                    </div>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="blood_pressure" name="blood_pressure" min="0" max="200" value="72" class="form-slider">
+                                </div>
+                                <span class="form-help">Diastolic blood pressure (mm Hg)</span>
+                            </div>
+
+                            <!-- Skin Thickness -->
+                            <div class="form-group">
+                                <div class="form-label-container">
+                                    <label class="form-label" for="skin_thickness">Skin Fold Thickness</label>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <label class="unknown-checkbox-container">
+                                            <input type="checkbox" class="unknown-checkbox" data-target="skin_thickness">
+                                            <span>Unknown</span>
+                                        </label>
+                                        <span class="form-value-display" id="skin_thickness-val">23</span>
+                                    </div>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="skin_thickness" name="skin_thickness" min="0" max="100" value="23" class="form-slider">
+                                </div>
+                                <span class="form-help">Triceps skin fold thickness (mm)</span>
+                            </div>
+                        </div>
+
+                        <!-- Stepper Actions -->
+                        <div class="wizard-actions">
+                            <button type="button" class="btn btn-secondary btn-prev">Previous</button>
+                            <button type="button" class="btn btn-primary btn-next">Next: Lab Metrics</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: LAB METRICS -->
+                    <div class="wizard-step-pane" id="step-pane-3">
+                        <h2 class="pane-title">Step 3: Laboratory Assays & Genetic Score</h2>
+                        <p class="pane-desc">Record quantitative plasma assays and genetic indicators.</p>
+                        
+                        <div class="form-grid">
+                            <!-- Glucose -->
+                            <div class="form-group">
+                                <div class="form-label-container">
+                                    <label class="form-label" for="glucose">Plasma Glucose</label>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <label class="unknown-checkbox-container">
+                                            <input type="checkbox" class="unknown-checkbox" data-target="glucose">
+                                            <span>Unknown</span>
+                                        </label>
+                                        <span class="form-value-display" id="glucose-val">120</span>
+                                    </div>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="glucose" name="glucose" min="0" max="300" value="120" class="form-slider">
+                                </div>
+                                <span class="form-help">2hr oral glucose tolerance test (mg/dL)</span>
+                            </div>
+
+                            <!-- Insulin -->
+                            <div class="form-group">
+                                <div class="form-label-container">
+                                    <label class="form-label" for="insulin">2-Hour Insulin</label>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <label class="unknown-checkbox-container">
+                                            <input type="checkbox" class="unknown-checkbox" data-target="insulin">
+                                            <span>Unknown</span>
+                                        </label>
+                                        <span class="form-value-display" id="insulin-val">80</span>
+                                    </div>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="insulin" name="insulin" min="0" max="900" step="5" value="80" class="form-slider">
+                                </div>
+                                <span class="form-help">2-Hour serum insulin (mu U/ml)</span>
+                            </div>
+
+                            <!-- Diabetes Pedigree -->
+                            <div class="form-group">
+                                <div class="form-label-container">
+                                    <label class="form-label" for="diabetes_pedigree">Pedigree Function</label>
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <label class="unknown-checkbox-container">
+                                            <input type="checkbox" class="unknown-checkbox" data-target="diabetes_pedigree">
+                                            <span>Unknown</span>
+                                        </label>
+                                        <span class="form-value-display" id="diabetes_pedigree-val">0.372</span>
+                                    </div>
+                                </div>
+                                <div class="slider-container">
+                                    <input type="range" id="diabetes_pedigree" name="diabetes_pedigree" min="0.05" max="2.5" step="0.001" value="0.372" class="form-slider">
+                                </div>
+                                <span class="form-help">Diabetes pedigree score (family history index)</span>
+                            </div>
+                        </div>
+
+                        <!-- Stepper Actions -->
+                        <div class="wizard-actions">
+                            <button type="button" class="btn btn-secondary btn-prev">Previous</button>
+                            <button type="button" class="btn btn-primary btn-next">Next: Review</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 4: CLINICAL REVIEW & SUBMIT -->
+                    <div class="wizard-step-pane" id="step-pane-4">
+                        <h2 class="pane-title">Step 4: Clinical Review & Diagnostic Options</h2>
+                        <p class="pane-desc">Review a summary of indicators and configure bypass parameters before running inference.</p>
+                        
+                        <!-- Summary Table -->
+                        <div class="summary-table-container">
+                            <table class="summary-table">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>Entered Value</th>
+                                        <th>Reference Guidance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-summary-target="sex">
+                                        <td class="lbl">Sex</td>
+                                        <td class="val">Female</td>
+                                        <td class="ref">Clinical demographic factor</td>
+                                    </tr>
+                                    <tr data-summary-target="age">
+                                        <td class="lbl">Age</td>
+                                        <td class="val">29 yrs</td>
+                                        <td class="ref">PIMA Cohort Mean: ~33.2 yrs</td>
+                                    </tr>
+                                    <tr data-summary-target="pregnancies">
+                                        <td class="lbl">Pregnancies</td>
+                                        <td class="val">3</td>
+                                        <td class="ref">PIMA Cohort Median: 3</td>
+                                    </tr>
+                                    <tr data-summary-target="bmi">
+                                        <td class="lbl">Body Mass Index (BMI)</td>
+                                        <td class="val">32.0</td>
+                                        <td class="ref">Normal: 18.5 - 24.9 (CDC)</td>
+                                    </tr>
+                                    <tr data-summary-target="blood_pressure">
+                                        <td class="lbl">Diastolic BP</td>
+                                        <td class="val">72 mmHg</td>
+                                        <td class="ref">Normal: &lt; 80 mmHg (AHA)</td>
+                                    </tr>
+                                    <tr data-summary-target="skin_thickness">
+                                        <td class="lbl">Skin Fold Thickness</td>
+                                        <td class="val">23 mm</td>
+                                        <td class="ref">Triceps reference standard</td>
+                                    </tr>
+                                    <tr data-summary-target="glucose">
+                                        <td class="lbl">Plasma Glucose</td>
+                                        <td class="val">120 mg/dL</td>
+                                        <td class="ref">Normal Fasting: &lt; 100 mg/dL</td>
+                                    </tr>
+                                    <tr data-summary-target="insulin">
+                                        <td class="lbl">2-Hour Insulin</td>
+                                        <td class="val">80 mu U/ml</td>
+                                        <td class="ref">Standard fasting: 5 - 25 mu U/ml</td>
+                                    </tr>
+                                    <tr data-summary-target="diabetes_pedigree">
+                                        <td class="lbl">Pedigree Score</td>
+                                        <td class="val">0.372</td>
+                                        <td class="ref">Hereditary genetic coefficient</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Diagnosis Override Box -->
+                        <div class="override-box">
+                            <label class="override-checkbox-container">
+                                <input type="checkbox" id="has_confirmed_diabetes" name="has_confirmed_diabetes">
+                                <div class="checkbox-custom"></div>
+                                <div class="override-text">
+                                    <strong>Patient has a Confirmed Diabetes Diagnosis</strong>
+                                    <p>Forces the system to bypass risk estimation and generate direct RAG chronic care management guidelines.</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Stepper Actions -->
+                        <div class="wizard-actions">
+                            <button type="button" class="btn btn-secondary btn-prev">Previous</button>
+                            <div style="display: flex; gap: 1rem;">
+                                <button type="button" class="btn btn-secondary" id="autofill-btn" style="padding: 0.9rem 1.25rem;">Autofill High Risk</button>
+                                <button type="submit" class="btn btn-primary" id="submit-btn">
+                                    <span>Run Diagnostics Engine</span>
+                                    <span style="font-size: 1.1rem;">⚡</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <!-- Processing Overlay Modal -->
+    <div class="overlay" id="loading-overlay">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-title">LucidClinics AI is analyzing...</div>
+            <p style="color: var(--color-text-muted); font-size: 0.95rem;">Evaluating clinical parameters & generating SHAP explainability matrices.</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>

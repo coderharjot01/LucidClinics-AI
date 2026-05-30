@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+xgboost
+pandas
+numpy
+shap
+joblib
+chromadb
+google-genai
+python-dotenv

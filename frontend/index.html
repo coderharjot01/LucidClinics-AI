@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LucidClinics AI | Clinical Diagnostics Welcome</title>
+    <meta name="description" content="State-of-the-art AI-driven clinical risk analysis and interactive explainability report engines.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header Section -->
+        <header>
+            <div class="logo">
+                <div class="logo-icon">L</div>
+                <span>LucidClinics <span style="color: var(--color-teal); font-weight: 400;">AI</span></span>
+            </div>
+            <nav style="display: flex; gap: 1rem;">
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="intake.html" class="nav-link">Assess Patient</a>
+                <a href="#" class="nav-link" id="nav-report-link" style="opacity: 0.6; cursor: not-allowed;">Clinical Report</a>
+            </nav>
+        </header>
+
+        <!-- Landing Hero Section -->
+        <section class="landing-hero" id="landing-section">
+            <div class="hero-badge">🧬 CLINDSS CORE ENGINE V2.0</div>
+            <h1>Explainable Clinical Risk Profiling</h1>
+            <p>Empower clinical decisions with high-fidelity XGBoost predictions, dynamic SHAP game-theory explanations, and RAG-grounded LLM clinical consultation narratives.</p>
+            
+            <!-- Statistics Dashboard Panel -->
+            <div class="stats-panel">
+                <div class="stat-card">
+                    <span class="stat-value">92.4%</span>
+                    <span class="stat-label">Model Accuracy (ROC-AUC)</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">PIMA</span>
+                    <span class="stat-label">Reference Cohort Database</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">Active</span>
+                    <span class="stat-label">ChromaDB Vector Store</span>
+                </div>
+            </div>
+
+            <a href="intake.html" class="btn btn-primary btn-large" style="display: inline-flex; align-items: center; gap: 0.75rem; text-decoration: none;">
+                <span>Launch Patient Assessment</span>
+                <span style="font-size: 1.2rem;">⚡</span>
+            </a>
+        </section>
+
+        <!-- Core Features Overview Panel -->
+        <section class="grid-layout" style="margin-top: 2rem;">
+            <!-- Core 1 -->
+            <div class="card" style="padding: 2rem;">
+                <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-cyan);">Machine Learning Engine</h3>
+                <p style="font-size: 0.95rem; color: var(--color-text-muted);">
+                    This platform connects to a high-performance **XGBoost Classifier** that handles class imbalances dynamically via stratified training configurations.
+                </p>
+                <div class="tech-pill-container" style="margin-top: 1.5rem;">
+                    <span class="tech-pill">XGBoost v2.1.4</span>
+                    <span class="tech-pill">FastAPI API</span>
+                </div>
+            </div>
+
+            <!-- Core 2 -->
+            <div class="card" style="padding: 2rem;">
+                <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; color: var(--color-teal);">SHAP Game Theory</h3>
+                <p style="font-size: 0.95rem; color: var(--color-text-muted);">
+                    Unlike black-box models, we leverage **Shapley Additive exPlanations (SHAP)**. This assigns each feature a value representing how much it pushed the risk percentage up or down relative to the baseline dataset average.
+                </p>
+                <div class="tech-pill-container" style="margin-top: 1.5rem;">
+                    <span class="tech-pill">SHAP 0.49.1</span>
+                    <span class="tech-pill">Local Explainer</span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
