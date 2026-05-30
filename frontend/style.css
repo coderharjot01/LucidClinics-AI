@@ -752,6 +752,34 @@ header {
     100% { transform: translateY(-30px) scale(1.1); }
 }
 
+/* Asynchronous Floating Animations for Blocks */
+@keyframes bob-slow {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
+}
+
+.float-bob-1 {
+    animation: bob-slow 6s infinite ease-in-out;
+}
+
+.float-bob-2 {
+    animation: bob-slow 7s infinite ease-in-out;
+    animation-delay: 1.5s;
+}
+
+.float-bob-3 {
+    animation: bob-slow 8s infinite ease-in-out;
+    animation-delay: 3.5s;
+}
+
+.float-bob-1:hover, .float-bob-2:hover, .float-bob-3:hover {
+    animation-play-state: paused;
+    transform: translateY(-12px) scale(1.02) !important;
+    border-color: var(--color-teal) !important;
+    box-shadow: 0 15px 35px rgba(0, 245, 212, 0.15), 0 8px 32px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
 /* Print Layout Customizations */
 @media print {
     body {
