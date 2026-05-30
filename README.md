@@ -1,3 +1,13 @@
+---
+title: LucidClinics Portal
+emoji: 🧬
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # LucidClinics AI — Clinical Risk Diagnostics & Explainability Portal
 
 LucidClinics AI is a high-fidelity web application combining machine learning classification with clinical explainability. By connecting a production-ready **FastAPI microservice** to a beautiful **glassmorphic dashboard**, users can estimate diabetes risks using XGBoost and interpret the model's decisions in real-time via **SHAP (Shapley Additive exPlanations)** game theory.
