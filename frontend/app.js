@@ -540,14 +540,37 @@ function initReportPage() {
         return;
     }
 
+    // Bind action buttons immediately so they are functional regardless of any rendering errors!
+    const btnNewTest = document.getElementById("btn-new-test");
+    if (btnNewTest) {
+        btnNewTest.addEventListener("click", () => {
+            window.location.href = "intake.html";
+        });
+    }
+
+    const btnPrint = document.getElementById("btn-print");
+    if (btnPrint) {
+        btnPrint.addEventListener("click", () => {
+            window.print();
+        });
+    }
+
     const data = JSON.parse(analysisStr);
     const inputs = JSON.parse(inputsStr);
 
     // Initial page load layout updates
-    updateReportUIData(data, inputs, patientSex);
+    try {
+        updateReportUIData(data, inputs, patientSex);
+    } catch (e) {
+        console.error("Error rendering report UI elements:", e);
+    }
 
     // 2. Initialise What-If Sandbox sliders
-    initSandboxPanel(inputs, patientSex);
+    try {
+        initSandboxPanel(inputs, patientSex);
+    } catch (e) {
+        console.error("Error initializing Sandbox Panel:", e);
+    }
 }
 
 /**
@@ -601,7 +624,7 @@ function updateReportUIData(data, inputs, patientSex) {
     // 2. Animate Circular Risk Gauge
     const circle = document.getElementById("risk-gauge-ring");
     if (circle) {
-        const radius = circle.r.baseVal.value;
+        const radius = parseFloat(circle.getAttribute("r")) || 90;
         const circumference = 2 * Math.PI * radius;
         
         // Set stroke configuration
@@ -681,23 +704,6 @@ function updateReportUIData(data, inputs, patientSex) {
 
     // 6. Initialise 3D Anatomy Visualizer (WebGL / Canvas Fallback)
     init3DAnatomy("anatomy-3d-container", riskPercentage);
-
-    // 8. Action Button Listeners (Only bind once on initial page load)
-    const btnNewTest = document.getElementById("btn-new-test");
-    if (btnNewTest && !btnNewTest.dataset.bound) {
-        btnNewTest.dataset.bound = "true";
-        btnNewTest.addEventListener("click", () => {
-            window.location.href = "intake.html";
-        });
-    }
-
-    const btnPrint = document.getElementById("btn-print");
-    if (btnPrint && !btnPrint.dataset.bound) {
-        btnPrint.dataset.bound = "true";
-        btnPrint.addEventListener("click", () => {
-            window.print();
-        });
-    }
 }
 
 /**
