@@ -174,9 +174,11 @@ header {
     font-weight: 800;
     line-height: 1.2;
     margin-bottom: 1rem;
-    background: linear-gradient(135deg, #ffffff 40%, var(--color-cyan) 100%);
+    background: linear-gradient(90deg, #ffffff, var(--color-teal), var(--color-cyan), var(--color-purple), #ffffff);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    animation: text-gradient-shift 6s linear infinite;
 }
 
 .hero p {
@@ -1218,9 +1220,20 @@ header {
     font-weight: 800;
     line-height: 1.15;
     margin-bottom: 1.25rem;
-    background: linear-gradient(135deg, #ffffff 40%, var(--color-teal) 75%, var(--color-cyan) 100%);
+    background: linear-gradient(90deg, #ffffff, var(--color-teal), var(--color-cyan), var(--color-purple), #ffffff);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    animation: text-gradient-shift 6s linear infinite;
+}
+
+@keyframes text-gradient-shift {
+    0% {
+        background-position: 0% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
 }
 
 .landing-hero p {
