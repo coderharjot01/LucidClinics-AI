@@ -1,5 +1,6 @@
 # backend/main.py
 import os
+import json
 from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,8 +9,6 @@ import joblib
 import pandas as pd
 import numpy as np
 import shap
-import chromadb
-from chromadb.utils import embedding_functions
 from google import genai
 from google.genai import types
 from google.genai import errors
@@ -37,11 +36,11 @@ try:
     model = joblib.load(model_path)
     explainer = shap.TreeExplainer(model)
     
-    # Initialize Local Vector Database
-    vdb_path = os.path.join(backend_dir, "chroma_db")
-    chroma_client = chromadb.PersistentClient(path=vdb_path)
-    default_ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
-    vdb_collection = chroma_client.get_collection(name="medical_guidelines", embedding_function=default_ef)
+    # Load Clinical Guidelines dataset directly
+    guidelines_path = os.path.join(backend_dir, "guidelines.json")
+    with open(guidelines_path, "r") as f:
+        guidelines_db = json.load(f)
+    print("Clinical Guidelines loaded successfully.")
     
     # Initialize Google Gemini Client (Requires GEMINI_API_KEY env variable set)
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -96,12 +95,21 @@ async def predict_risk_and_narrate(patient: PatientDataInput):
         else:
             primary_driver = max(feature_contributions, key=feature_contributions.get)
         
-        # C. RAG Layer: Retrieve Medical Guidelines matching our top risk driver
-        vdb_results = vdb_collection.query(
-            query_texts=[f"High {primary_driver} medical indicators"],
-            n_results=1
-        )
-        retrieved_guideline = vdb_results['documents'][0][0] if vdb_results['documents'] and vdb_results['documents'][0] else "Follow standard healthy living guidelines."
+        # C. Direct Mapping Layer: Retrieve Medical Guidelines matching our top risk driver
+        # Map primary risk factor feature names to category keys in guidelines.json
+        driver_mapping = {
+            "Pregnancies": "BMI",
+            "Glucose": "Glucose",
+            "BloodPressure": "Glucose",
+            "SkinThickness": "BMI",
+            "Insulin": "Glucose",
+            "BMI": "BMI",
+            "DiabetesPedigreeFunction": "Age",
+            "Age": "Age"
+        }
+        category = driver_mapping.get(primary_driver, "Glucose")
+        guideline_data = guidelines_db.get(category, guidelines_db["Glucose"])
+        retrieved_guideline = "\n".join(guideline_data["recommendations"])
 
         # D. GenAI Integration Layer: Construct the Prompt with Guardrails
         system_instruction = (
